@@ -7,10 +7,15 @@ which value MUST be either "plain" or "encrypted".
 
 #### Payload packet with `type == "plain"`
 
-```json
+```jsonc
 {
     "type": "plain",
-    "plaintext": "...", // optional, but must be string if present
+    "text": "...",    // optional text payload
+    "payload": [
+        <PACKET1>,
+        <PACKET2>,
+        ...
+    ],
     "clues": [ // optional, but must be a list of CLUES if present
         CLUE1, CLUE2, ...
     ]
@@ -19,7 +24,7 @@ which value MUST be either "plain" or "encrypted".
 
 #### Payload packet with `type == "encrypted"`
 
-```json
+```jsonc
 {
     "type": "encrypted",
     "ciphertext": "...", // mandatory, must be an armored ciphertext by OpenPGP
@@ -40,7 +45,7 @@ at least one set of clues within the list given by `clues` key is solved.
 
 A `clue` type is an object having following format:
 
-```json
+```jsonc
 {
     "id": "...",    // mandatory unique id
 
