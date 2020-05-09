@@ -33,6 +33,15 @@ In encrypted packets:
 
 const TYPES = require("./types");
 
+const TYPE_REFERENCE = "reference",
+      TYPE_ASSIGNMENT = "assignment",
+      TYPE_DECLARATION = "declaration";
+
+module.exports.TYPE_REFERENCE = TYPE_REFERENCE;
+module.exports.TYPE_ASSIGNMENT = TYPE_ASSIGNMENT;
+module.exports.TYPE_DECLARATION = TYPE_DECLARATION;
+
+
 function checkAndReturnClueId(clue){
     const id = clue["@_id"];
     console.log(id);
@@ -74,7 +83,7 @@ module.exports.compilePlainClues = function(clues){
 module.exports.validateNodeClues = function(treenode){
     if(treenode.nodeType == "plain") return true; // TODO
 
-    const clues = treenode.getCluesByType("reference");
+    const clues = treenode.getCluesByType(TYPE_REFERENCE);
     var clueDefs = {};
     var pointer = treenode;
 
@@ -89,14 +98,14 @@ module.exports.validateNodeClues = function(treenode){
     }
 
     while(pointer.parent){
-        pointer.getCluesByType("declaration").forEach(recordDef);
+        pointer.getCluesByType(TYPE_DECLARATION).forEach(recordDef);
         pointer = pointer.parent;
     }
 
     if(treenode.parent){
         treenode.parent.plainChilds.forEach((siblingNode)=>{
             siblingNode.traverse((sn)=>{
-                sn.getCluesByType("declaration").forEach(recordDef);
+                sn.getCluesByType(TYPE_DECLARATION).forEach(recordDef);
             });
         });
     }
@@ -110,10 +119,62 @@ module.exports.validateNodeClues = function(treenode){
             );
         }
     });
-
-    
 }
 
+
+/*
+generateNodeEncryptionKeys
+
+Accepts a "encrypted" source node, calculate the passwords used for its
+encryption. Returns an array of passwords.
+
+NOTICE: This function does not verify the validity of references. To ensure
+this, `validateNodeClues` must be called prior to this function.
+*/
+module.exports.generateNodeEncryptionKeys = function(treenode){
+    if(treenode.nodeType != "encrypted"){
+        throw Error("Applies only to encrypted node.");
+    }
+
+    const clues = treenode.clues;
+
+    var root = treenode;
+    while(root.parent) root = root.parent;
+
+    const declaredClues = {};
+    root.traverse((node) => { // collect globally all clue declarations
+        node.getCluesByType(TYPE_DECLARATION).forEach((clue)=>{
+            declaredClues[clue.id] = clue;
+        });
+    });
+
+    const passwords = [];
+
+    clues.forEach((_) => {
+        var cluesArray = _.slice();
+        for(var i=0; i<cluesArray.length; i++){ // determine reference values
+            if(cluesArray[i].type == TYPE_DECLARATION) continue;
+            if(cluesArray[i].type != TYPE_REFERENCE) throw Error();
+            if(cluesArray[i].value !== undefined) continue; // customized value
+            cluesArray[i].value = declaredClues[cluesArray[i].id].value;
+        }
+
+        passwords.push(module.exports.buildPasswordFromClues(cluesArray));
+    });
+
+    return passwords;
+}
+
+
+module.exports.buildPasswordFromClues = function(cluesArray){
+    cluesArray.sort((a,b) => (a.id > b.id ? 1 : -1));
+    return cluesArray.map((e) => {
+        if(!TYPES.isString(e.value)){
+            throw Error("Clue value must be a string.");
+        }
+        return "(" + e.id + ")" + e.value;
+    }).join(",");
+}
 
 
 
@@ -127,41 +188,47 @@ class Clue {
 
         this.hint = nodeObj["@_hint"];
         this.value = nodeObj["@_value"];
-        this.type = "declaration";
+        this.type = TYPE_DECLARATION;
 
         if("encrypted" == context){ // a clue within a encrypted packet
             if(this.hint){
                 if(!this.value){
                     throw Error(
                         "Attempt to declare clue id=" + this.id + " failed. " +
-                        "Declaring a <clue /> within encrypted packet must " +
-                        "set a default value."
+                        "Declaring a <clue /> must set a default value."
                     );
                 }
                 // otherwise, this is a declaration.
             } else {
-                this.type = "reference";
+                this.type = TYPE_REFERENCE;
             }
         } else if("plain" == context){ // a clue within a plain packet
             if(!this.value && !this.hint){
                 throw Error(
                     "Plain packets cannot contain reference-typed <clue />."
                 );
-            } else if (undefined !== this.value) {
-                this.type = "assignment";
+            } else if (undefined !== this.value) { // value exists
+                if(this.hint === undefined){
+                    this.type = TYPE_ASSIGNMENT;
+                }
+                // both value and hint exists => declaration
+            } else if (this.hint !== undefined){
+                // hint exists, but value not
+                throw Error(
+                    "Attempt to declare clue id=" + this.id + " failed. " +
+                    "Declaring a <clue /> must set a default value."
+                );
             }
-            // otherwise (this.value == undefined), this is a declaration
         }
 
         // this.type: ["declaration", "reference" or "assignment"]
-
     }
 
     compile (){
         return {
             id: this.id,
-            hint: (this.type == "declaration" ? this.hint : undefined),
-            value: (this.type == "assignment" ? this.value : undefined),
+            hint: (this.type == TYPE_DECLARATION ? this.hint : undefined),
+            value: (this.type == TYPE_ASSIGNMENT ? this.value : undefined),
         }
     }
 

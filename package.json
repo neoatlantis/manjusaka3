@@ -9,6 +9,7 @@
   "author": "NeoAtlantis",
   "license": "GPL-2.0",
   "dependencies": {
-    "fast-xml-parser": "^3.16.0"
+    "fast-xml-parser": "^3.16.0",
+    "openpgp": "^4.10.4"
   }
 }
