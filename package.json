@@ -1,0 +1,14 @@
+{
+  "name": "manjusaka3",
+  "version": "3.0.0",
+  "description": "A self-decrypting message system based on user answers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "NeoAtlantis",
+  "license": "GPL-2.0",
+  "dependencies": {
+    "fast-xml-parser": "^3.16.0"
+  }
+}
