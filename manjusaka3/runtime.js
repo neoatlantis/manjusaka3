@@ -1,4 +1,4 @@
-const openpgp = require("openpgp");
+const openpgp = require("./openpgp.min");
 const CLUES = require("./clues");
 
 async function decryptPacket(packet, knownClues){
@@ -54,10 +54,11 @@ module.exports = async function* (compilation){
     const packets = [JSON.parse(compilation)];
     const clues = {}, assignments = {};
 
-    function collectClues(nodeClues){
+    function collectClues(node){
         // collect the assignment- and declaration-clues
-        // TODO collect also child nodes
-        nodeClues.forEach((clueGroup) => {
+        if(!node.clues) return;
+        if(node.cluesCollected) return;
+        node.clues.forEach((clueGroup) => {
             clueGroup.forEach((clue) => {
                 if(clue.value !== undefined){        // assignment
                     assignments[clue.id] = clue.value;
@@ -72,6 +73,7 @@ module.exports = async function* (compilation){
                 }
             });
         });
+        node.cluesCollected = true;
         //console.log("CLUES COLLECTION", clues);
     }
 
@@ -112,40 +114,58 @@ module.exports = async function* (compilation){
                 await new Promise((resolve, _) => setTimeout(resolve, 500));
             }
         }
-       
-        for(var i=0; i<packets.length; i++){
-            if(packets[i].clues && !packets[i].cluesCollected){
-                collectClues(packets[i].clues);
-                packets[i].cluesCollected = true;
-            }
-        }
+        
+        var unfoldingDone = false;
+        while(!unfoldingDone){
+            unfoldingDone = true;
 
+            var unfoldPlainDone = false;
+            while(!unfoldPlainDone){
+                unfoldPlainDone = true;
+                for(var i=0; i<packets.length; i++){
+                    if(packets[i].type != "plain") continue;
+                    collectClues(packets[i]);
+                    updateAssignments();
 
-        for(var i=0; i<packets.length; i++){
-            if(packets[i].type == "plain"){
-                if(packets[i].payload){
-                    packets[i].payload.forEach((x) => packets.push(x));
-                }
-                if(packets[i].text){
-                    yield { text: packets[i].text };
-                }
-                packets.splice(i, 1); // remove this packet.
-                break;
-            } else {
-                const decrypted = await decryptPacket(packets[i], clues);
-                if(decrypted){
-                    if(decrypted.text){
-                        yield { text: decrypted.text };
+                    if(packets[i].payload){
+                        packets[i].payload.forEach((x) => packets.push(x));
                     }
-                    if(decrypted.payload){
-                        decrypted.payload.forEach((x) => packets.push(x));
+                    if(packets[i].text){
+                        yield { text: packets[i].text };
                     }
                     packets.splice(i, 1); // remove this packet.
+                    unfoldPlainDone = false;
+                    unfoldingDone = false;
                     break;
                 }
             }
-        }
-        updateAssignments();
+
+            var unfoldDecryptDone = false;
+            while(!unfoldDecryptDone){
+                unfoldDecryptDone = true;
+                for(var i=0; i<packets.length; i++){
+                    if(packets[i].type != "encrypted") continue;
+                    collectClues(packets[i]);
+                    updateAssignments();
+
+                    const decrypted = await decryptPacket(packets[i], clues);
+                    if(decrypted){
+                        if(decrypted.text){
+                            yield { text: decrypted.text };
+                        }
+                        if(decrypted.payload){
+                            decrypted.payload.forEach((x) => packets.push(x));
+                        }
+                        packets.splice(i, 1); // remove this packet.
+                        unfoldPlainDone = false;
+                        unfoldingDone = false;
+                        break;
+                    }
+                }
+            }
+
+        } // end of loop: unfolding
+
     }
 
 

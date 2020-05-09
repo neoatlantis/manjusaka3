@@ -2,7 +2,7 @@ const PARSER = require('fast-xml-parser');
 const TYPES = require("./types");
 const CLUES = require("./clues");
 const Clue = CLUES.Clue;
-const openpgp = require("openpgp");
+const openpgp = require("./openpgp.min");
 
 
 
