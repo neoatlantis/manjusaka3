@@ -1,7 +1,28 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8" />
+<script src="../dist/manjusaka3.webruntime.js"></script>
+<script>
+// DATA_BEGIN
+manjusaka3_webruntime({"type":"plain","payload":[{"type":"plain","clues":[[{"id":"1","hint":"Answer 1+1 to get the result."},{"id":"hidden-clue-1","hint":"Open all the messages!"}]],"text":"Welcome to Manjusaka, the system helping you leave out encrypted messages\n        that can only be read by someone correctly answering the questions."},{"type":"encrypted","clues":[[{"id":"1"}]],"ciphertext":"wy4ECQMI+08dzKPOe/3gxeCnj9BjtTNSUBf2v5gYXyyD5IjLCsI7NzunZJCemGUF0rIB9oh+VRK0SvF9P7t3svZa6i3NdRciinRg53FmPSI0xnBgFtQkW5sJqyfb0ir/RV3wBIn0R00xZn3ZveBWv31niCGERIABnRFVxK5E8lCFnIjUDxImsUlPo9ha9zMjCOrhM5iDzUJY7+eIrpWt+UrFxpg8E36b/t+nt+Rq8yybPXcO3TsmmI3kFpGiaRVFYwb5dC/BAO5DEZMi1Gh+PVMv73jNjc2rQ5y8xROadhIhAc6V"},{"type":"encrypted","clues":[[{"id":"1"}],[{"id":"2","hint":"Alternatively, answer 2+2=?"},{"id":"3","hint":"3-2=?"}]],"ciphertext":"wy4ECQMIAjHosB5eZ23ghewfXj2Zu94MPJnulB1IPRZ2UJyTZLnKLIEnLT0K1UL0wy4ECQMIGF7+VCphKAzg5zvM7yZ38E4yNL9LSRWuwM0zFZffhSOzo04pbzb7jKEx0sBCASD4itasL6INtLF5z+Iveg/tDJLCu6miCXuulEKcd9hhBqWLgWsnsphdinc+nW+RJ/vvOGHCjgkH/XSsKm60oBQgbYw81/0ZshrVpWyRfiIIv2zEloHofg21T0+0hlt10bLfiBY73tRaDSnSjXIbTqo8OllThuWJ7HJDA4oQcWDXctP8Dj4X6O4b+eCHweqsElHuAz4I8FIZTjW3zSLwXHhk1DcrIxdbW58vv/hUssePSRrgL11eM1Yt4gxmwl48xqvPwXbYTJavlBB/9730zYbDG8b2ygWrMvIWGE0izJcThSq/7j0yEPd8rIWDO4Klwxk9Kr/+H+ogPesIDXHvnW3a"},{"type":"encrypted","clues":[[{"id":"hidden-clue-1"}]],"ciphertext":"wy4ECQMIkcpLVUxr0Dvg4ckB7PjCcupks+JcltOdYC0gucB869gr/g/s3taXFksh0sAwAXyKmn/1yUHRVl3Pxu83qXiEB0OBGivoIkNfVarApzbQ7bH2/NkZSJrvMzwJ25tQ6pi6hhqCFxq2Zjhxt1MOWm7jDTkULoV41hX03YUdaMOxuieZaGe+kV1o0jEq1vhljcExhIZ/jOmACCVCBnUdvkKO93Bq9l5UjNz9kokIZawocGIGOSDIDLE0Cn9RzAlr/jhHAlUA7dmpZcebIKoGNUDCROtVxBfKp7pFaQCdaDsyjIGPjiGx1j5H57vvhqeu8k97NBIaFv3xPNPNa8FqQEZEMWkyppjAfL6KKynpc2r2oXeHKTtxNybNYWev6kcT"}]});
+// DATA_END
+</script>
 </head>
 <body>
+<div id="template" style="display:none">
+    <div name="question">
+        <div name="description"></div>
+        <div><input name="answer" type="text" /></div>
+        <div><button>OK</button></div>
+    </div>
+</div>
+
+
+<div id="question-list"></div>
+
+<div id="messages"></div>
+
+
 </body>
 </html>

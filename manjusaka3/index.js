@@ -12,7 +12,9 @@ if(!operator) dieWithUsage();
 if(operator.slice(0, 1) == "c"){
     compiler(
         require("fs").readFileSync(process.argv[3]).toString()
-    ).then(console.log).then(()=>process.exit(0));
+    ).then(function(result){
+        console.log("manjusaka3_webruntime(" + result + ");");
+    }).then(()=>process.exit(0));
 } else if (operator.slice(0, 1) == "r") {
 } else {
     dieWithUsage();    

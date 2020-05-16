@@ -1,5 +1,6 @@
 const openpgp = require("./openpgp.min");
 const CLUES = require("./clues");
+const TYPES = require("./types");
 
 async function decryptPacket(packet, knownClues){
     /* Tries to decrypt a packet. If successful, return { payload: ..., text:
@@ -30,16 +31,11 @@ async function decryptPacket(packet, knownClues){
 
 
     const ciphertext = Buffer.from(packet.ciphertext, "base64");
-
-    try{
-        const decrypted = await openpgp.decrypt({
-            message: await openpgp.message.read(ciphertext),
-            passwords: passwords,
-        });
-        return JSON.parse(decrypted.data);
-    } catch(e){
-        console.error(e);
-    }
+    const decrypted = await openpgp.decrypt({
+        message: await openpgp.message.read(ciphertext),
+        passwords: passwords,
+    });
+    return JSON.parse(decrypted.data);
 }
 
 
@@ -51,7 +47,9 @@ async function decryptPacket(packet, knownClues){
 
 module.exports = async function* (compilation){
     
-    const packets = [JSON.parse(compilation)];
+    const packets = [
+        (TYPES.isString(compilation) ? JSON.parse(compilation): compilation)
+    ];
     const clues = {}, assignments = {};
 
     function collectClues(node){
@@ -148,8 +146,8 @@ module.exports = async function* (compilation){
                     collectClues(packets[i]);
                     updateAssignments();
 
-                    const decrypted = await decryptPacket(packets[i], clues);
-                    if(decrypted){
+                    try{
+                        const decrypted = await decryptPacket(packets[i], clues);
                         if(decrypted.text){
                             yield { text: decrypted.text };
                         }
@@ -160,6 +158,8 @@ module.exports = async function* (compilation){
                         unfoldPlainDone = false;
                         unfoldingDone = false;
                         break;
+                    } catch(e){
+                        // continue
                     }
                 }
             }

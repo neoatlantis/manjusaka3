@@ -1,3 +1,4 @@
+*.js.tmp*
 *.sw?
 *.temp
 node_modules/
