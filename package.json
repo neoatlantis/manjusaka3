@@ -10,7 +10,7 @@
   "license": "GPL-2.0",
   "dependencies": {
     "asn1.js": "^5.3.0",
-    "fast-xml-parser": "^3.16.0",
+    "fast-xml-parser": "^4.2.4",
     "jquery": "^3.5.1"
   }
 }
